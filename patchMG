@@ -1,0 +1,72 @@
+#!/bin/bash
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+# Script Name: patchMG
+# Date: Feb 1st, 2019. 
+# Modified: NA
+# Versioning: NA
+# Author: Krishna Bagal.
+# Info: Check System,Security and CVE update.
+#        Worked and tested on Ubuntu 16.04
+#=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+DATEnTIME=`date +%Y_%m_%d-%H:%M`
+DATE=`date +%Y_%m_%d`
+HOSTNAME=`hostname -f`
+HOSTIP=`/sbin/ip route get 1 | awk '{print $NF;exit}'`
+UPTIME=`/usr/bin/uptime`
+CURRENTDATE=`date`
+KERNELVERSION=`/bin/uname -r`
+APT="/usr/bin/apt-get"
+TOTALPKG=`/usr/bin/dpkg -l |wc -l`
+HOLDPKG=`/usr/bin/dpkg -l |grep -i ^h |wc -l`
+PKGSTATUS=`/usr/bin/apt-get -s dist-upgrade | grep "^[[:digit:]]\+ upgraded"`
+PKGLIST=`/usr/bin/apt-get -s dist-upgrade | awk '/^Inst/ { print $2 }'`
+SECUTIRYUPDATE=`/usr/bin/apt-get -s dist-upgrade| grep "^Inst" | grep -i security |wc -l`
+NORMALUPDATE=`/usr/bin/apt-get -s dist-upgrade| grep "^Inst" | grep -v security |wc -l`
+IMPPORITY=$(for a in `/usr/bin/apt-get -s dist-upgrade | awk '/^Inst/ { print $2 }'`; do apt-cache show $a |grep -iA4 $a |grep -i Priority |uniq |grep -i important; done  |wc -l)
+OPTPORITY=$(for a in `/usr/bin/apt-get -s dist-upgrade | awk '/^Inst/ { print $2 }'`; do apt-cache show $a |grep -iA4 $a |grep -i Priority |uniq |grep -i optional; done  |wc -l)
+
+echo "==============================: System Info :======================================="
+echo -e "\t\t\t\t\t\t$CURRENTDATE" 
+echo "Hostname: $HOSTNAME" 
+echo "Host IP: $HOSTIP" 
+/usr/bin/lsb_release -d 
+echo "Kernel Version: $KERNELVERSION" 
+echo "" 
+echo Uptime: $UPTIME 
+echo ""
+echo "------------------------------------------------------------------------------------"
+echo ""
+echo -e "\t\t\t\t -: Dashboard :-"
+echo -e "\t\t\t --++--++--++--++--++--++--++--"
+echo ""
+echo "Total Packges Installed On System : $TOTALPKG" 
+echo "Total Hold Packges : $HOLDPKG" 
+echo ""
+echo "Current Stats:"
+echo "$PKGSTATUS"
+echo ""
+echo -e "Total Security Updates: $SECUTIRYUPDATE \t\t Regular Updates: $NORMALUPDATE"
+echo -e "Total Important Updates: $IMPPORITY \t\t Total Optional Updates: $OPTPORITY"
+echo ""
+echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ""
+echo "Below Packages Need To Be Update:"
+echo ""
+echo "$PKGLIST"
+echo "...................................................................................."
+echo ""
+echo "Package Details With CVE Report:"
+for a in `/usr/bin/apt-get -s dist-upgrade | awk '/^Inst/ { print $2 }'`
+do
+	PKGPRI=`apt-cache show $a |grep -iA4 $a |grep -i Priority |uniq`
+	PKGVER=`apt-cache policy $a|egrep -i "Installed:|Candidate:" | sed 's/ //g'`
+	PKGCANDIDATEVER=`apt-cache policy $a|egrep -i "Candidate:" | sed 's/ //g' |cut -d: -f2`
+	PKGCHNGLOG=`apt changelog $a |sed -n '/'$PKGCANDIDATEVER'/ , /--/p' `
+	echo "Package Name: $a"
+	echo "$PKGPRI"
+	echo "$PKGVER"
+	echo ""
+	echo "CVE Update:"
+	echo "$PKGCHNGLOG"
+	echo "***********************************************************************"
+done
