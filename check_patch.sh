@@ -4,8 +4,8 @@
 # Date: Apr 11th, 2019. 
 # Modified: NA
 # Versioning: NA
-# Author: Krishna Bagal. 
-# Info: Check System,Security and CVE updates and send it to Slack Channel.
+# Author: Krishna Bagal.
+# Info: Check System,Security and Important updates and send it to Slack Channel.
 #=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 DATEnTIME=`date +%Y_%m_%d-%H:%M`
 DATE=`date +%Y_%m_%d`
@@ -37,14 +37,14 @@ else
 	REBOOT="No"
 fi
 curl -X POST \
-  https://<SLACK-HOOK-KEY-URL> \
+  https://<SLACK-HOOK-URL> \
   -H 'cache-control: no-cache' \
   -H 'content-type: application/json' \
   -d '{
     "attachments": [
         {
             "fallback": "Patch Details",
-            "text": ": : Gupshup Patch Report : :",
+            "text": ": : Patch Report : :",
             "fields": [
                 {
                     "title": "Hostname:",
